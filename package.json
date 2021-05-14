@@ -1,0 +1,28 @@
+{
+  "name": "@spacetraders-syndicate/falcon",
+  "version": "1.0.0",
+  "description": "a framework for spacetraders.io gameplay",
+  "main": "index.js",
+  "dependencies": {
+    "@prisma/client": "^2.22.1",
+    "@spacetraders-syndicate/openapi-sdk": "^1.0.1",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  },
+  "devDependencies": {
+    "prisma": "^2.22.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spacetraders-syndicate/falcon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spacetraders-syndicate/falcon/issues"
+  },
+  "homepage": "https://github.com/spacetraders-syndicate/falcon#readme"
+}

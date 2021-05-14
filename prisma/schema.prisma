@@ -1,0 +1,72 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Ship {
+  id                String    @unique
+  class             String
+  location          Location? @relation("Location", fields: [locationSymbol], references: [symbol])
+  locationSymbol    String?
+  manufacturer      String
+  type              String
+  plating           Int
+  weapons           Int
+  spaceAvailable    Int
+  maxCargo          Int
+  destination       Location? @relation("Destination", fields: [destinationSymbol], references: [symbol])
+  destinationSymbol String?
+  arrivalTime       DateTime?
+  cargo             Cargo[]
+  x                 Int
+  y                 Int
+}
+
+model Cargo {
+  good       Good   @relation(fields: [goodSymbol], references: [symbol])
+  goodSymbol String
+  ship       Ship   @relation(fields: [shipId], references: [id])
+  shipId     String
+  quantity   Int
+
+  @@unique([goodSymbol, shipId])
+}
+
+model Location {
+  symbol             String           @unique
+  ships              Ship[]           @relation("Location")
+  incomingShips      Ship[]           @relation("Destination")
+  type               String
+  name               String
+  x                  Int
+  y                  Int
+  allowsConstruction Boolean
+  marketplace        MarkplaceEntry[]
+}
+
+model MarkplaceEntry {
+  location          Location @relation(fields: [locationSymbol], references: [symbol])
+  locationSymbol    String
+  good              Good     @relation(fields: [goodSymbol], references: [symbol])
+  goodSymbol        String
+  quantityAvailable Int
+  pricePerUnit      Int
+  spread            Int
+  sellPricePerUnit  Int
+
+  @@unique([locationSymbol, goodSymbol])
+}
+
+model Good {
+  symbol             String           @unique
+  volumePerUnit      Int
+  cargoHolds         Cargo[]
+  marketplaceEntries MarkplaceEntry[]
+}
