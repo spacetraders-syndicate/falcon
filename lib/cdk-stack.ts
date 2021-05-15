@@ -2,25 +2,16 @@ import * as cdk from '@aws-cdk/core';
 import * as apig from '@aws-cdk/aws-apigatewayv2';
 import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as task from '@aws-cdk/aws-stepfunctions-tasks';
-import { HttpProxyIntegration } from '@aws-cdk/aws-apigatewayv2-integrations';
-import { HttpApi } from '@aws-cdk/aws-apigatewayv2';
+import { CfnApi, HttpApi, HttpIntegrationType, HttpMethod, HttpRoute, HttpRouteKey } from '@aws-cdk/aws-apigatewayv2';
 import { Duration } from '@aws-cdk/core';
 
 export class CdkStack extends cdk.Stack {
-  api: HttpApi;
+  api: CfnApi;
 
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    
-    const spacetraders = new HttpProxyIntegration({
-      url: 'https://api.spacetraders.io'
-    })
 
-    this.api = new HttpApi(this, 'SpaceTradersProxy');
-    this.api.addRoutes({
-      path: "/{proxy+}",
-      integration: spacetraders
-    })
+    this._configureSpaceTradersProxy();
 
     const waitX = new sfn.Wait(this, 'waitSeconds', {
       time: sfn.WaitTime.duration(cdk.Duration.seconds(30))
@@ -47,15 +38,42 @@ export class CdkStack extends cdk.Stack {
     })
   }
 
+  _configureSpaceTradersProxy(){
+    this.api = new CfnApi(this, 'SpaceTradersIoProxy', {
+      name: 'SpaceTradersProxy',
+      protocolType: 'HTTP'
+    });
+
+    const spacetraders = new apig.CfnIntegration(this, "SpaceTradersHttpIntegration", {
+      apiId: this.api.ref,
+      integrationUri: 'https://api.spacetraders.io',
+      integrationType: HttpIntegrationType.HTTP_PROXY,
+      integrationMethod: HttpMethod.ANY,
+      requestParameters:  {
+        "overwrite:path": "$request.path"
+      },
+      payloadFormatVersion: '1.0'
+    })
+
+    const route = new apig.CfnRoute(this, 'SpaceTradersIntegrationRoute', {
+      apiId: this.api.ref,
+      routeKey: '$default',
+      target: `integrations/${spacetraders.ref}`,
+    })
+
+    const stage = new apig.CfnStage(this, 'SpaceTradersApiStage', {
+      apiId: this.api.ref,
+      autoDeploy: true,
+      stageName: '$default'
+    })
+  }
+
   apiCall(apiPath: string, method: task.HttpMethod = task.HttpMethod.GET){
     return new task.CallApiGatewayHttpApiEndpoint(this, `${apiPath.split('/').join('')}`, {
-      apiId: this.api.apiId,
+      apiId: this.api.ref,
       apiStack: this.api.stack,
       method,
-      apiPath,
-      headers: {
-        "Content-Type": "application/json"
-      }
+      apiPath
     })
   }
 }
