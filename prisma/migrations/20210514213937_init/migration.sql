@@ -27,13 +27,21 @@ CREATE TABLE "Cargo" (
 );
 
 -- CreateTable
+CREATE TABLE "System" (
+    "symbol" TEXT NOT NULL,
+    "name" TEXT NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "Location" (
     "symbol" TEXT NOT NULL,
+    "systemSymbol" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "x" INTEGER NOT NULL,
     "y" INTEGER NOT NULL,
-    "allowsConstruction" BOOLEAN NOT NULL
+    "allowsConstruction" BOOLEAN NOT NULL,
+    FOREIGN KEY ("systemSymbol") REFERENCES "System" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -59,6 +67,9 @@ CREATE UNIQUE INDEX "Ship.id_unique" ON "Ship"("id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Cargo.goodSymbol_shipId_unique" ON "Cargo"("goodSymbol", "shipId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "System.symbol_unique" ON "System"("symbol");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Location.symbol_unique" ON "Location"("symbol");

@@ -39,10 +39,18 @@ model Cargo {
   @@unique([goodSymbol, shipId])
 }
 
+model System {
+  symbol    String     @unique
+  name      String
+  locations Location[]
+}
+
 model Location {
   symbol             String           @unique
   ships              Ship[]           @relation("Location")
   incomingShips      Ship[]           @relation("Destination")
+  system             System           @relation(fields: [systemSymbol], references: [symbol])
+  systemSymbol       String
   type               String
   name               String
   x                  Int
