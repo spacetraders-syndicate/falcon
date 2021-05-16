@@ -4,6 +4,7 @@ import * as sfn from '@aws-cdk/aws-stepfunctions';
 import * as task from '@aws-cdk/aws-stepfunctions-tasks';
 import { CfnApi, HttpApi, HttpIntegrationType, HttpMethod, HttpRoute, HttpRouteKey } from '@aws-cdk/aws-apigatewayv2';
 import { Duration } from '@aws-cdk/core';
+import { CallApi } from './call-api';
 
 export class CdkStack extends cdk.Stack {
   api: CfnApi;
@@ -18,27 +19,30 @@ export class CdkStack extends cdk.Stack {
     })
 
     const success = new sfn.Pass(this, 'Success')
-    const failed = new sfn.Fail(this, 'Failed', {
-      cause: 'TOTAL FAILURE',
-      error: 'Everything failed'
-    })
+
+  
     // The code that defines your stack goes here
-    const getGameStatus = this.apiCall('/game/status');
-    const getPlayerShips = this.apiCall('/user/ships');
+    const getGameStatus = new CallApi(this, 'GetGameStatus', {
+      api: this.api,
+      extractor: "$.ResponseBody.status",
+      path: '/game/status'
+    });
+    
+  
     const definition = getGameStatus
       .next(
         new sfn.Choice(this, 'Online?')
-          .when(sfn.Condition.stringMatches('$.status', '*online*'), success)
+          .when(sfn.Condition.stringMatches('$', '*online*'), success)
           .otherwise(waitX.next(getGameStatus))
       )
-      
+
     new sfn.StateMachine(this, 'ShipLoop', {
       definition,
       timeout: Duration.minutes(3)
     })
   }
 
-  _configureSpaceTradersProxy(){
+  _configureSpaceTradersProxy() {
     this.api = new CfnApi(this, 'SpaceTradersIoProxy', {
       name: 'SpaceTradersProxy',
       protocolType: 'HTTP'
@@ -49,7 +53,7 @@ export class CdkStack extends cdk.Stack {
       integrationUri: 'https://api.spacetraders.io',
       integrationType: HttpIntegrationType.HTTP_PROXY,
       integrationMethod: HttpMethod.ANY,
-      requestParameters:  {
+      requestParameters: {
         "overwrite:path": "$request.path"
       },
       payloadFormatVersion: '1.0'
@@ -65,15 +69,6 @@ export class CdkStack extends cdk.Stack {
       apiId: this.api.ref,
       autoDeploy: true,
       stageName: '$default'
-    })
-  }
-
-  apiCall(apiPath: string, method: task.HttpMethod = task.HttpMethod.GET){
-    return new task.CallApiGatewayHttpApiEndpoint(this, `${apiPath.split('/').join('')}`, {
-      apiId: this.api.ref,
-      apiStack: this.api.stack,
-      method,
-      apiPath
     })
   }
 }
