@@ -31,8 +31,11 @@ export class CallApi extends sfn.StateMachineFragment {
         })
 
         const success = new sfn.Pass(this, `${id}MapState`, {
-            outputPath: props.extractor
+            parameters: {
+                results: sfn.JsonPath.stringAt(props.extractor)
+            }
         })
+
         const retry = new sfn.Wait(this, `${id}RetryWait`, {
             time: sfn.WaitTime.secondsPath("$.Headers['retry-after']")
         }).next(first);
@@ -42,32 +45,24 @@ export class CallApi extends sfn.StateMachineFragment {
             .when(sfn.Condition.isPresent(props.extractor), success)
             .otherwise(failed)      
 
-        first.next(choice);
+        const definition = first.next(choice);
 
-        this.startState = first;
-        this.endStates = [success];
+        const requestStateMachine = new sfn.StateMachine(this, `${id}RequestStateMachine2`, {
+            definition,
+            stateMachineType: sfn.StateMachineType.STANDARD,
+            timeout: cdk.Duration.minutes(3),
+        })
+
+        const runStateMachine = new task.StepFunctionsStartExecution(this, `${id}ExecuteRequestStateMachine`, {
+            stateMachine: requestStateMachine,
+            integrationPattern: sfn.IntegrationPattern.RUN_JOB,
+            input: sfn.TaskInput.fromObject({
+               "AWS_STEP_FUNCTIONS_STARTED_BY_EXECUTION_ID.$": "$$.Execution.Id"
+            }),
+            outputPath: "$.Output.results"
+        })
+
+        this.startState = runStateMachine;
+        this.endStates = [runStateMachine];
     }
 }
-
-
-
-// apiCall(apiPath: string, method: task.HttpMethod = task.HttpMethod.GET) {
-//     const request = new task.CallApiGatewayHttpApiEndpoint(this, `${apiPath.split('/').join('')}`, {
-//       apiId: this.api.ref,
-//       apiStack: this.api.stack,
-//       method,
-//       apiPath
-//     })
-    
-//     const waitRetryTime = new sfn.Wait(this, 'waitRetryTime', {
-//       time: sfn.WaitTime.secondsPath("$.Headers.retry-after")
-//     })
-
-//     return request.next(
-//       new sfn.Choice(
-//         this,
-//         "Retry?",
-//       )
-//         .when(sfn.Condition.numberEquals("$.StatusCode", 429), waitRetryTime)
-//     )
-//   }

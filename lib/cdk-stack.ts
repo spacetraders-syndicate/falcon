@@ -27,8 +27,7 @@ export class CdkStack extends cdk.Stack {
       extractor: "$.ResponseBody.status",
       path: '/game/status'
     });
-    
-  
+
     const definition = getGameStatus
       .next(
         new sfn.Choice(this, 'Online?')
