@@ -47,9 +47,9 @@ export class CallApi extends sfn.StateMachineFragment {
 
         const definition = first.next(choice);
 
-        const requestStateMachine = new sfn.StateMachine(this, `${id}RequestStateMachine2`, {
+        const requestStateMachine = new sfn.StateMachine(this, `${id}RequestStateMachine`, {
             definition,
-            stateMachineType: sfn.StateMachineType.STANDARD,
+            stateMachineType: sfn.StateMachineType.EXPRESS,
             timeout: cdk.Duration.minutes(3),
         })
 
