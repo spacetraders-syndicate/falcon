@@ -9,7 +9,7 @@
     "@aws-cdk/aws-stepfunctions-tasks": "^1.104.0",
     "@aws-cdk/core": "1.104.0",
     "@prisma/client": "^2.22.1",
-    "@spacetraders-syndicate/openapi-sdk": "^2.0.0",
+    "@spacetraders-syndicate/openapi-sdk": "^2.0.2",
     "dotenv": "^9.0.2",
     "source-map-support": "^0.5.19"
   },

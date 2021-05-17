@@ -10,17 +10,83 @@ generator client {
   provider = "prisma-client-js"
 }
 
+model GoodType {
+  name                   String
+  symbol                 String                           @id
+  volumePerUnit          Int
+  cargoHolds             Cargo[]
+  marketplaceEntries     MarkplaceEntry[]
+  producingStructureType StructureTypeProducingGoodType[]
+  consumingStructureType StructureTypeConsumingGoodType[]
+}
+
+model LoanType {
+  type               String  @id
+  amount             Int
+  collateralRequired Boolean
+  rate               Int
+  termInDays         Int
+}
+
+model LocationType {
+  type                 String                             @id
+  allowedLocationTypes LocationTypeAllowedStructureType[]
+}
+
+model StructureType {
+  type                 String                             @id
+  name                 String
+  price                Int
+  allowedLocationTypes LocationTypeAllowedStructureType[]
+  producesGood         StructureTypeProducingGoodType[]
+  consumesGood         StructureTypeConsumingGoodType[]
+}
+
+model LocationTypeAllowedStructureType {
+  locationType      LocationType  @relation(fields: [locationTypeType], references: [type])
+  locationTypeType  String
+  structureType     StructureType @relation(fields: [structureTypeType], references: [type])
+  structureTypeType String
+
+  @@id([locationTypeType, structureTypeType])
+}
+
+model StructureTypeProducingGoodType {
+  goodType          GoodType      @relation(fields: [goodTypeSymbol], references: [symbol])
+  goodTypeSymbol    String
+  structureType     StructureType @relation(fields: [structureTypeType], references: [type])
+  structureTypeType String
+
+  @@id([goodTypeSymbol, structureTypeType])
+}
+
+model StructureTypeConsumingGoodType {
+  goodType          GoodType      @relation(fields: [goodTypeSymbol], references: [symbol])
+  goodTypeSymbol    String
+  structureType     StructureType @relation(fields: [structureTypeType], references: [type])
+  structureTypeType String
+
+  @@id([goodTypeSymbol, structureTypeType])
+}
+
+model ShipType {
+  class        String
+  manufacturer String
+  maxCargo     Int
+  plating      Int
+  speed        Int
+  type         String @id
+  weapons      Int
+}
+
 model Ship {
-  id                String    @unique
+  id                String    @id
   class             String
   location          Location? @relation("Location", fields: [locationSymbol], references: [symbol])
   locationSymbol    String?
   manufacturer      String
   type              String
-  plating           Int
-  weapons           Int
   spaceAvailable    Int
-  maxCargo          Int
   destination       Location? @relation("Destination", fields: [destinationSymbol], references: [symbol])
   destinationSymbol String?
   arrivalTime       DateTime?
@@ -30,13 +96,13 @@ model Ship {
 }
 
 model Cargo {
-  good       Good   @relation(fields: [goodSymbol], references: [symbol])
+  good       GoodType @relation(fields: [goodSymbol], references: [symbol])
   goodSymbol String
-  ship       Ship   @relation(fields: [shipId], references: [id])
+  ship       Ship     @relation(fields: [shipId], references: [id])
   shipId     String
   quantity   Int
 
-  @@unique([goodSymbol, shipId])
+  @@id([goodSymbol, shipId])
 }
 
 model System {
@@ -46,7 +112,7 @@ model System {
 }
 
 model Location {
-  symbol             String           @unique
+  symbol             String           @id
   ships              Ship[]           @relation("Location")
   incomingShips      Ship[]           @relation("Destination")
   system             System           @relation(fields: [systemSymbol], references: [symbol])
@@ -62,19 +128,12 @@ model Location {
 model MarkplaceEntry {
   location          Location @relation(fields: [locationSymbol], references: [symbol])
   locationSymbol    String
-  good              Good     @relation(fields: [goodSymbol], references: [symbol])
+  good              GoodType @relation(fields: [goodSymbol], references: [symbol])
   goodSymbol        String
   quantityAvailable Int
   pricePerUnit      Int
   spread            Int
   sellPricePerUnit  Int
 
-  @@unique([locationSymbol, goodSymbol])
-}
-
-model Good {
-  symbol             String           @unique
-  volumePerUnit      Int
-  cargoHolds         Cargo[]
-  marketplaceEntries MarkplaceEntry[]
+  @@id([locationSymbol, goodSymbol])
 }
