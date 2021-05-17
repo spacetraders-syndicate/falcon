@@ -18,6 +18,7 @@ model GoodType {
   marketplaceEntries     MarkplaceEntry[]
   producingStructureType StructureTypeProducingGoodType[]
   consumingStructureType StructureTypeConsumingGoodType[]
+  restrictedShipTypes    RestrictedGoodsOnShipType[]
 }
 
 model LoanType {
@@ -29,27 +30,27 @@ model LoanType {
 }
 
 model LocationType {
-  type                 String                             @id
-  allowedLocationTypes LocationTypeAllowedStructureType[]
+  type                  String          @id
+  allowedStructureTypes StructureType[]
 }
 
 model StructureType {
-  type                 String                             @id
+  type                 String                           @id
   name                 String
   price                Int
-  allowedLocationTypes LocationTypeAllowedStructureType[]
+  allowedLocationTypes LocationType[]
   producesGood         StructureTypeProducingGoodType[]
   consumesGood         StructureTypeConsumingGoodType[]
 }
 
-model LocationTypeAllowedStructureType {
-  locationType      LocationType  @relation(fields: [locationTypeType], references: [type])
-  locationTypeType  String
-  structureType     StructureType @relation(fields: [structureTypeType], references: [type])
-  structureTypeType String
+// model LocationTypeAllowedStructureType {
+//   locationType      LocationType  @relation(fields: [locationTypeType], references: [type])
+//   locationTypeType  String
+//   structureType     StructureType @relation(fields: [structureTypeType], references: [type])
+//   structureTypeType String
 
-  @@id([locationTypeType, structureTypeType])
-}
+//   @@id([locationTypeType, structureTypeType])
+// }
 
 model StructureTypeProducingGoodType {
   goodType          GoodType      @relation(fields: [goodTypeSymbol], references: [symbol])
@@ -70,13 +71,23 @@ model StructureTypeConsumingGoodType {
 }
 
 model ShipType {
-  class        String
-  manufacturer String
-  maxCargo     Int
-  plating      Int
-  speed        Int
-  type         String @id
-  weapons      Int
+  class           String
+  manufacturer    String
+  maxCargo        Int
+  plating         Int
+  speed           Int
+  type            String                      @id
+  weapons         Int
+  restrictedGoods RestrictedGoodsOnShipType[]
+}
+
+model RestrictedGoodsOnShipType {
+  good         GoodType @relation(fields: [goodSymbol], references: [symbol])
+  goodSymbol   String
+  shipType     ShipType @relation(fields: [shipTypeType], references: [type])
+  shipTypeType String
+
+  @@id([goodSymbol, shipTypeType])
 }
 
 model Ship {
