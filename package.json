@@ -9,16 +9,16 @@
     "@aws-cdk/aws-stepfunctions-tasks": "^1.104.0",
     "@aws-cdk/core": "1.104.0",
     "@prisma/client": "^2.22.1",
-    "@spacetraders-syndicate/openapi-sdk": "^1.0.1",
+    "@spacetraders-syndicate/openapi-sdk": "^2.0.0",
     "dotenv": "^9.0.2",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.19"
   },
   "devDependencies": {
     "prisma": "^2.22.1",
     "@aws-cdk/assert": "1.104.0",
-    "@types/jest": "^26.0.10",
-    "jest": "^26.4.2",
-    "ts-jest": "^26.2.0",
+    "@types/jest": "^26.0.23",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
     "aws-cdk": "1.104.0",
     "@types/node": "^15.3.0",
     "ts-node": "^9.1.1",
