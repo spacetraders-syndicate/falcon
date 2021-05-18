@@ -27,16 +27,6 @@ CREATE TABLE "StructureType" (
 );
 
 -- CreateTable
-CREATE TABLE "LocationTypeAllowedStructureType" (
-    "locationTypeType" TEXT NOT NULL,
-    "structureTypeType" TEXT NOT NULL,
-
-    PRIMARY KEY ("locationTypeType", "structureTypeType"),
-    FOREIGN KEY ("locationTypeType") REFERENCES "LocationType" ("type") ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY ("structureTypeType") REFERENCES "StructureType" ("type") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
--- CreateTable
 CREATE TABLE "StructureTypeProducingGoodType" (
     "goodTypeSymbol" TEXT NOT NULL,
     "structureTypeType" TEXT NOT NULL,
@@ -65,6 +55,16 @@ CREATE TABLE "ShipType" (
     "speed" INTEGER NOT NULL,
     "type" TEXT NOT NULL PRIMARY KEY,
     "weapons" INTEGER NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "RestrictedGoodsOnShipType" (
+    "goodSymbol" TEXT NOT NULL,
+    "shipTypeType" TEXT NOT NULL,
+
+    PRIMARY KEY ("goodSymbol", "shipTypeType"),
+    FOREIGN KEY ("goodSymbol") REFERENCES "GoodType" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("shipTypeType") REFERENCES "ShipType" ("type") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -126,5 +126,19 @@ CREATE TABLE "MarkplaceEntry" (
     FOREIGN KEY ("goodSymbol") REFERENCES "GoodType" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
+-- CreateTable
+CREATE TABLE "_LocationTypeToStructureType" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+    FOREIGN KEY ("A") REFERENCES "LocationType" ("type") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("B") REFERENCES "StructureType" ("type") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "System.symbol_unique" ON "System"("symbol");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_LocationTypeToStructureType_AB_unique" ON "_LocationTypeToStructureType"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_LocationTypeToStructureType_B_index" ON "_LocationTypeToStructureType"("B");
