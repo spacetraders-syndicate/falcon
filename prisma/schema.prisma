@@ -27,6 +27,7 @@ model LoanType {
   collateralRequired Boolean
   rate               Int
   termInDays         Int
+  Loan               Loan[]
 }
 
 model LocationType {
@@ -147,4 +148,21 @@ model MarkplaceEntry {
   sellPricePerUnit  Int
 
   @@id([locationSymbol, goodSymbol])
+}
+
+model Loan {
+  id              String   @id
+  due             DateTime
+  repaymentAmount Int
+  status          String
+  type            LoanType @relation(fields: [loanTypeType], references: [type])
+  account         Account? @relation(fields: [accountUsername], references: [username])
+  accountUsername String?
+  loanTypeType    String
+}
+
+model Account {
+  username String @id
+  credits  Int
+  loans    Loan[]
 }

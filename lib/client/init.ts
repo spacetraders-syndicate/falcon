@@ -4,6 +4,12 @@ const prisma = new PrismaClient()
 const api = new Api();
 
 export const init = async () => {
+    try {
+        await prisma.loanType.count();
+    } catch(e){
+        console.log(e)
+    }
+    
     const loanCount = await prisma.loanType.count();
     if (loanCount === 0) {
         const { data: { loans } } = await api.types.listGameLoans();
@@ -153,5 +159,69 @@ export const init = async () => {
         })
 
         const createdStructureTypes = await Promise.all(createStructureTypes);
+    }
+
+
+    const account = await prisma.account.findFirst({
+        include: {
+            loans: {}
+        }
+    });
+
+    if(!account?.loans || account.loans.length == 0){
+        const { data: { user }} = await api.user.getAccount();
+        await prisma.account.upsert({
+            where: { username: api.config.username! },
+            update: {
+                username: user.username,
+                credits: user.credits || 0
+            },
+            create: {
+                username: user.username,
+                credits: user.credits || 0
+            }
+        })
+
+        const { data: { loans: existingLoans }} = await api.loans.listUserLoans();
+
+        if(!existingLoans || existingLoans.length == 0){
+            const { data: { loan }} = await api.loans.createUserLoan({
+                createUserLoanPayload: {
+                    type: 'STARTUP' // we just know this is what it is called
+                }
+            })
+            const payload = {
+                id: loan.id,
+                due: loan.due,
+                repaymentAmount: loan.repaymentAmount,
+                status: loan.status,
+                loanTypeType: loan.type,
+                accountUsername: api.config.username
+            };
+            await prisma.loan.upsert({
+                where: {
+                    id: loan.id
+                },
+                create: payload,
+                update: payload
+            })
+        } else {
+            const loan = existingLoans[0];
+            const payload = {
+                id: loan.id,
+                due: loan.due,
+                repaymentAmount: loan.repaymentAmount,
+                status: loan.status,
+                loanTypeType: loan.type,
+                accountUsername: api.config.username
+            };
+            await prisma.loan.upsert({
+                where: {
+                    id: loan.id
+                },
+                create: payload,
+                update: payload
+            })
+        }
     }
 }
