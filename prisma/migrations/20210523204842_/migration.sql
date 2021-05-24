@@ -104,12 +104,13 @@ CREATE TABLE "System" (
 CREATE TABLE "Location" (
     "symbol" TEXT NOT NULL PRIMARY KEY,
     "systemSymbol" TEXT NOT NULL,
-    "type" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "x" INTEGER NOT NULL,
     "y" INTEGER NOT NULL,
     "allowsConstruction" BOOLEAN NOT NULL,
-    FOREIGN KEY ("systemSymbol") REFERENCES "System" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE
+    "locationTypeType" TEXT NOT NULL,
+    FOREIGN KEY ("systemSymbol") REFERENCES "System" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("locationTypeType") REFERENCES "LocationType" ("type") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -124,6 +125,24 @@ CREATE TABLE "MarkplaceEntry" (
     PRIMARY KEY ("locationSymbol", "goodSymbol"),
     FOREIGN KEY ("locationSymbol") REFERENCES "Location" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY ("goodSymbol") REFERENCES "GoodType" ("symbol") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Loan" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "due" DATETIME NOT NULL,
+    "repaymentAmount" INTEGER NOT NULL,
+    "status" TEXT NOT NULL,
+    "accountUsername" TEXT,
+    "loanTypeType" TEXT NOT NULL,
+    FOREIGN KEY ("loanTypeType") REFERENCES "LoanType" ("type") ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY ("accountUsername") REFERENCES "Account" ("username") ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "Account" (
+    "username" TEXT NOT NULL PRIMARY KEY,
+    "credits" INTEGER NOT NULL
 );
 
 -- CreateTable

@@ -1,7 +1,7 @@
 import * as dotenv from 'dotenv';
 import axios, { AxiosError } from 'axios';
 import rateLimit from '@hokify/axios-rate-limit';
-import { Configuration, LoansApi, ShipsApi, TypesApi, UsersApi } from "@spacetraders-syndicate/openapi-sdk"
+import { Configuration, LoansApi, ShipsApi, SystemsApi, TypesApi, UsersApi } from "@spacetraders-syndicate/openapi-sdk"
 import axiosRetry, {isNetworkOrIdempotentRequestError} from 'axios-retry';
 
 
@@ -26,6 +26,7 @@ export default class Api {
     ships: ShipsApi;
     user: UsersApi;
     loans: LoansApi;
+    system: SystemsApi;
 
     constructor(){
         this.config = new Configuration({
@@ -37,5 +38,6 @@ export default class Api {
         this.ships = new ShipsApi(this.config, undefined, axiosInstance);
         this.user = new UsersApi(this.config, undefined, axiosInstance);
         this.loans = new LoansApi(this.config, undefined, axiosInstance);
+        this.system = new SystemsApi(this.config, undefined, axiosInstance);
     }
 }

@@ -9,3 +9,4 @@ cdk.out
 
 .env
 prisma/dev.db
+prisma/dev.db-journal

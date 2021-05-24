@@ -33,6 +33,7 @@ model LoanType {
 model LocationType {
   type                  String          @id
   allowedStructureTypes StructureType[]
+  locations             Location[]
 }
 
 model StructureType {
@@ -129,12 +130,13 @@ model Location {
   incomingShips      Ship[]           @relation("Destination")
   system             System           @relation(fields: [systemSymbol], references: [symbol])
   systemSymbol       String
-  type               String
+  type               LocationType     @relation(fields: [locationTypeType], references: [type])
   name               String
   x                  Int
   y                  Int
   allowsConstruction Boolean
   marketplace        MarkplaceEntry[]
+  locationTypeType   String
 }
 
 model MarkplaceEntry {

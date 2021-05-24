@@ -1,4 +1,7 @@
 import { init } from './init'
+import Fleet from './fleet'
+
+const fleetManager = new Fleet();
 
 const main = async () => {
 
@@ -11,8 +14,8 @@ const main = async () => {
         // await Contracts.makeDecisions();
         // await Router.makeDecisions();
 
-        // FleetManager.makeDecisions();
-        // IndsutryManager.makeDecisions();
+        await fleetManager.makeDecisions();
+        // IndustryManager.makeDecisions();
 
         // For Each Ship
             // loop

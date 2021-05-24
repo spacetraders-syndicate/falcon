@@ -4,12 +4,6 @@ const prisma = new PrismaClient()
 const api = new Api();
 
 export const init = async () => {
-    try {
-        await prisma.loanType.count();
-    } catch(e){
-        console.log(e)
-    }
-    
     const loanCount = await prisma.loanType.count();
     if (loanCount === 0) {
         const { data: { loans } } = await api.types.listGameLoans();
@@ -168,8 +162,8 @@ export const init = async () => {
         }
     });
 
-    if(!account?.loans || account.loans.length == 0){
-        const { data: { user }} = await api.user.getAccount();
+    if (!account?.loans || account.loans.length == 0) {
+        const { data: { user } } = await api.user.getAccount();
         await prisma.account.upsert({
             where: { username: api.config.username! },
             update: {
@@ -182,10 +176,10 @@ export const init = async () => {
             }
         })
 
-        const { data: { loans: existingLoans }} = await api.loans.listUserLoans();
+        const { data: { loans: existingLoans } } = await api.loans.listUserLoans();
 
-        if(!existingLoans || existingLoans.length == 0){
-            const { data: { loan }} = await api.loans.createUserLoan({
+        if (!existingLoans || existingLoans.length == 0) {
+            const { data: { loan } } = await api.loans.createUserLoan({
                 createUserLoanPayload: {
                     type: 'STARTUP' // we just know this is what it is called
                 }
@@ -224,4 +218,61 @@ export const init = async () => {
             })
         }
     }
+
+    const { data: { systems } } = await api.system.listGameSystems();
+    const systemPromises = systems.map((system) => {
+        const payload = {
+            symbol: system.symbol,
+            name: system.name
+        }
+        return prisma.system.upsert({
+            where: {
+                symbol: system.symbol
+            },
+            create: payload,
+            update: payload
+        })
+    })
+    await Promise.all(systemPromises);
+
+    const locationPromises: Array<Promise<any>> = [];
+    systems.map((system) => {
+        system.locations.map((location) => {
+            const payload: Prisma.LocationCreateInput = {
+                symbol: location.symbol,
+                name: location.name,
+                x: location.x,
+                y: location.y,
+                allowsConstruction: location.allowsConstruction,
+                system: {
+                    connect: {
+                        symbol: system.symbol
+                    }
+                },
+                type: {
+                    connectOrCreate:
+                    {
+                        create: { type: location.type },
+                        where: {
+                            type: location.type
+                        }
+
+                    }
+
+                }
+            }
+            locationPromises.push(prisma.location.upsert({
+                where: {
+                    symbol: location.symbol
+                },
+                create: payload,
+                update: payload
+            }).catch(e => {
+                console.log(location)
+            }))
+        })
+    })
+
+    await Promise.all(locationPromises);
+    console.log("Initialized...")
 }
